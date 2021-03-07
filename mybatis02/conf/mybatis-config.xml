@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    
+    <!--通过properties引入外部数据源配置文件-->
+    <properties resource="jdbc.properties"></properties>
+
+
+    <settings>
+        <!--为了数据库字段名和bean的属性名一致将下划线替换成驼峰-->
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+        <!--分布查询开启延迟加载(两个配置搭配使用)-->
+        <setting name="lazyLoadingEnabled" value="true"/>
+        <setting name="aggressiveLazyLoading" value="false"/> <!--是否需要加载全部字段-->
+        <!--开启二级缓存-->
+        <setting name="cacheEnabled" value="true"/>
+    </settings>
+
+
+        <!--分页插件(顺序必须在environments上面)-->
+    <plugins>
+        <plugin interceptor="com.github.pagehelper.PageInterceptor"></plugin>
+    </plugins>
+
+
+    <!-- 数据库连接环境的配置 -->
+    <!--default 设置默认使用的数据库环境
+      environments里面可以配置多个 environment,意味着可以配置多个数据源，那么默认用哪个呢？
+        默认用environments的 default 和 environment的id 为一致的
+    -->
+    <environments default="development">
+        <!-- type="JDBC|MANAGED" 忘了-->
+        <environment id="development">
+            <transactionManager type="JDBC" />
+            <!-- type="POOLED|UNPOOLED|JNDI" POOLED:用mybaitis连接池 UNPOOLED不用mybaitis连接池-->
+            <dataSource type="POOLED">
+                <property name="driver" value="${jdbc.driver}" />
+                <property name="url" value="${jdbc.url}" />
+                <property name="username" value="${jdbc.username}" />
+                <property name="password" value="${jdbc.password}" />
+            </dataSource>
+        </environment>
+    </environments>
+    <!-- 引入SQL映射文件,Mapper映射文件 可以批量引入注册-->
+    <mappers>
+        <mapper resource="EmployeeMapper.xml" />
+        <mapper resource="DepartmentMapper.xml" />
+    </mappers>
+</configuration>
+
+

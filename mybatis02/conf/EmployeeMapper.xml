@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mapper.EmployeeMapper">
+
+    <!--该映射文件使用二级缓存-->
+    <cache />
+    <!--第三方缓存-->
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache"></cache>
+
+    <!--自定义映射-->
+    <!--List<Employee> getEmployeeAndDept();-->
+    <select id="getEmployeeAndDept" resultMap="myEmpAndDept">
+
+        SELECT e.id,e.last_name,e.email,e.gender,e.did,d.id did,d.deptName from tbl_employee e LEFT JOIN tbl_dept d on e.did = d.id
+
+    </select>
+    
+    <resultMap id="myEmpAndDept" type="bean.Employee">
+
+        <id column="id" property="id"/>
+        <result column="last_name" property="lastName"/>
+        <result column="email" property="email"/>
+        <result column="gender" property="gender"/>
+        <result column="did" property="did"/>
+        
+        <association property="dept" javaType="bean.Department">
+            <id column="did" property="id"/>
+            <result column="deptName" property="deptName"/>
+        </association>
+
+    </resultMap>
+
+    <!--分布查询-->
+    <!-- Employee getEmpByIdStep(Integer id);-->
+    <select id="getEmpByIdStep" resultMap="MyEmpByStep">
+         select * from tbl_employee where id=#{id}
+    </select>
+    <resultMap id="MyEmpByStep" type="bean.Employee">
+
+        <id column="id" property="id"/>
+        <result column="last_name" property="lastName"/>
+        <result column="email" property="email"/>
+        <result column="gender" property="gender"/>
+        <result column="did" property="did"/>
+        <!--用Employee的did去查Department的数据-->
+        <association
+                property="dept"
+                javaType="bean.Department"
+                select = "mapper.DepartmentMapper.getDeptById" column="did">
+        </association>
+
+    </resultMap>
+
+    <!--动态sql-->
+    <!--List<Employee> getdynamicSQl(Employee employee);-->
+    <!--常规写法-->
+    <!--<select id="getdynamicSQl" resultType="bean.Employee">
+        SELECT * from tbl_employee WHERE
+        id = #{id}
+        AND last_name = #{lastName}
+        AND gender = #{gender}
+        AND email = #{email}
+    </select>-->
+   <!--动态sql-->
+    <select id="getdynamicSQl" resultType="bean.Employee">
+        <!--where标签自动帮我们去掉多余的and-->
+        SELECT * from tbl_employee 
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="lastName != null and lastName != ''">
+                AND last_name = #{lastName}
+            </if>
+            <if test="email != null and email != ''">
+                AND email = #{email}
+            </if>
+            <if test="gender == '0' or gender =='1'">
+                AND gender = #{gender}
+            </if>
+            
+        </where>
+        
+    </select>
+
+
+    <!--List<Employee> getdynamicSQlChoose(Employee employee);-->
+    <!--动态sql choose-->
+    <select id="getdynamicSQlChoose" resultType="bean.Employee">
+        <!--where标签自动帮我们去掉多余的and-->
+        SELECT * from tbl_employee
+        <where>
+        <choose>
+            <when test="id != null">
+                AND id = #{id}
+            </when>
+            <when test="lastName != null and lastName != ''">
+                AND last_name = #{lastName}
+            </when>
+            <when test="email != null and email != ''">
+                AND email = #{email}
+            </when>
+            <otherwise>
+                gender = '1'
+            </otherwise>
+
+        </choose>
+        </where>
+
+    </select>
+
+
+    <!--添加-->
+    <!--Boolean insetDataByChoose(Employee employee);-->
+    <insert id="insetDataByChoose">
+        insert into tbl_employee
+         (
+         id,
+         last_name,
+         email,
+         gender
+         ) VALUES (
+         null,
+         #{lastName},
+         #{email},
+       <choose>
+           <!-- 0那里没加单引号，加了就匹配不到 因为String类型在用预编译preparestament#{}时,
+            传过就已经变成了单引号了 "0"变成'0' 这里再加单引号 就啥也不是了-->
+           <when test="gender == 0">'男'</when>
+           <when test="gender == 1">'女'</when>
+           <otherwise>'性别不详'</otherwise>
+       </choose>
+         )
+    </insert>
+
+    <!--批量删除原始方法 用${value}-->
+    <!--void batchDelete(String eids);-->
+    <delete id="batchDelete">
+        delete from tbl_employee where id in (${value})
+    </delete>
+
+    <!--
+     动态sql foreach 批量添加
+     void batchInsert(List<Employee> emps);
+    -->
+    <insert id="batchInsert">
+        insert into tbl_employee (
+         id,
+         last_name,
+         email,
+         gender
+         ) VALUES
+         <foreach collection="list" separator="," item="emp">
+             (null,#{emp.lastName},#{emp.email},#{emp.gender})
+         </foreach>
+    </insert>
+
+    <!--测试缓存-->
+    <!--Employee getEmployeeByID(String id);-->
+    <select id="getEmployeeByID" resultType="bean.Employee">
+        SELECT * from tbl_employee WHERE id = #{id}
+    </select>
+
+    <!--测试插件-->
+    <!--List<Employee> getEmployeesByPage();-->
+    <select id="getEmployeesByPage" resultType="bean.Employee">
+        select * from tbl_employee
+    </select>
+
+
+</mapper>

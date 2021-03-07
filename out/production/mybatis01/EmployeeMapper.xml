@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mapper.EmployeeMapper">
+    <select id="getEmployeeById" resultType="bean.Employee">
+        <!--当数据库字段名和bean的属性名不一致时可以使用别名，不然返回的数据为null
+         我们在开发中尽量把数据库的字段名和bean的属性名保持一致就完事了
+        -->
+        <!--select id ,last_name lastName ,email ,gender from tbl_employee where id = #{id}-->
+        <!--注意这里写#和写$是不一样的-->
+        select * from tbl_employee  where id = #{id}
+    </select>
+
+    <!--
+      List<Employee> getAllEmployee();
+      void addEmployee(Employee employee);
+      void deleteEmployee();
+      void updateEmployee();
+      getEmployeeByIdReturnMap;
+      getAllEmployeeByIdReturnMap
+    -->
+    <select id="getAllEmployee" resultType="bean.Employee">
+        select * from tbl_employee
+    </select>
+
+
+    <!--需求: 插入一条新数据，立马查询这条数据. -->
+    <insert id="addEmployee" useGeneratedKeys="true" keyProperty="id">
+        insert into  tbl_employee values(null,#{lastName},#{email},#{gender})
+    </insert>
+
+
+
+    <delete id="deleteEmployee">
+        delete from tbl_employee where id = #{id}
+    </delete>
+
+    <update id="updateEmployee">
+        update tbl_employee set last_name = #{lastName}, email = #{email},gender = #{gender} where id = #{id}
+    </update>
+
+    <!--查询一条记录且返回值类型为map的时候，resultType必须要有值-->
+    <select id="getEmployeeByIdReturnMap" resultType="java.util.HashMap">
+        select * from tbl_employee  where id = #{id}
+    </select>
+
+    <select id="getAllEmployeeByIdReturnMap" resultType="java.util.HashMap">
+    <!--只是resultType不一样 返回的值都不一样-->
+    <!--<select id="getAllEmployeeByIdReturnMap" resultType="java.util.HashMap">-->
+        select * from tbl_employee
+    </select>
+
+    <!--传递多个参数
+       Employee paramsByIDAndName(String id,String gender);
+    -->
+    <select id="paramsByIDAndName" resultType="bean.Employee">
+        SELECT * from tbl_employee WHERE id = #{0} AND gender = #{1}
+    </select>
+
+
+
+</mapper>

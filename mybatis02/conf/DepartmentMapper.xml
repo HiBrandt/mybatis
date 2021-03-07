@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mapper.DepartmentMapper">
+
+    <!-- Department getDeptById(Integer id);-->
+    <select id="getDeptById" resultType="bean.Department">
+       select id,deptName  from tbl_dept where id=#{id}
+    </select>
+
+    <!--一对多-->
+    <!--Department getDeptEmpsByID( Integer id);-->
+    <select id="getDeptEmpsByID" resultMap="myDeptAndEmps">
+      SELECT d.id,d.deptName,e.did,e.last_name,e.email,e.email,e.gender,e.id eid from tbl_dept d LEFT JOIN tbl_employee e on d.id = e.did where d.id = #{id}
+    </select>
+    <resultMap id="myDeptAndEmps" type="bean.Department">
+        <id column="id" property="id"/>
+        <result column="deptName" property="deptName"/>
+        <!--
+			property: 关联的属性名
+			ofType: 集合中元素的类型
+		 -->
+        <collection property="emps" ofType="bean.Employee">
+            <id column="eid" property="id"/>
+            <result column="last_name" property="lastName"/>
+            <result column="email" property="email"/>
+            <result column="gender" property="gender"/>
+            <result column="did" property="did"/>
+        </collection>
+    </resultMap>
+
+
+</mapper>
